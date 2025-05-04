@@ -220,6 +220,14 @@ class FormBuilder
         // when creating the HTML element. Then, we will return the entire input.
         $merge = compact('type', 'value', 'id');
 
+        if ($id === null || $id === '') {
+            unset($merge['id']);
+        }
+
+        if ($value === null || $value === '') {
+            unset($merge['value']);
+        }
+
         $options = array_merge($options, $merge);
 
         return $this->toHtmlString('<input' . $this->html->attributes($options) . '>');
@@ -326,6 +334,10 @@ class FormBuilder
 
     protected function getModelValueAttribute($name): mixed
     {
+        if (! isset($this->model)) {
+            return null;
+        }
+
         $key = $this->transformKey($name);
 
         if ((is_string($this->model) || is_object($this->model)) && method_exists($this->model, 'getFormValue')) {

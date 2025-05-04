@@ -2,6 +2,7 @@
 
 namespace Kris\LaravelFormBuilder\Fields;
 
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Kris\LaravelFormBuilder\Filters\Exception\FilterAlreadyBindedException;
@@ -114,13 +115,18 @@ abstract class FormField
      * @param Form $parent
      * @param array $options
      */
-    public function __construct($name, $type, Form $parent, array $options = [])
+    public function __construct($name, $type, Form $parent, array|Arrayable $options = [])
     {
         $this->name = $name;
         $this->type = $type;
         $this->parent = $parent;
         $this->formHelper = $this->parent->getFormHelper();
         $this->setTemplate();
+
+        if ($options instanceof Arrayable) {
+            $options = $options->toArray();
+        }
+
         $this->setDefaultOptions($options);
         $this->setupValue();
         $this->initFilters();

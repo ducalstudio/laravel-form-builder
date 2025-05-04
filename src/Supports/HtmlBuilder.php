@@ -6,6 +6,7 @@ use BadMethodCallException;
 use Illuminate\Contracts\Routing\UrlGenerator;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Support\HtmlString;
+use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Macroable;
 use Kris\LaravelFormBuilder\Traits\Componentable;
 
@@ -100,17 +101,20 @@ class HtmlBuilder
     {
         $attributes['alt'] = $alt;
 
+        $src = $this->url->asset($url, $secure);
+
+        if (Str::startsWith($url, ['data:image/png;base64,', 'data:image/jpeg;base64,'])) {
+            $src = $url;
+        }
+
         return $this->toHtmlString(
-            '<img src="' . $this->url->asset(
-                $url,
-                $secure
-            ) . '"' . $this->attributes($attributes) . '>'
+            '<img src="' . $src . '"' . $this->attributes($attributes) . '>'
         );
     }
 
     public function favicon($url, $attributes = [], $secure = null): HtmlString
     {
-        $defaults = ['rel' => 'shortcut icon', 'type' => 'image/x-icon'];
+        $defaults = ['rel' => 'icon', 'type' => 'image/x-icon'];
 
         $attributes = array_merge($defaults, $attributes);
 
@@ -180,9 +184,11 @@ class HtmlBuilder
         return $this->link($this->url->action($action, $parameters), $title, $attributes, $secure, $escape);
     }
 
-    public function mailto($email, $title = null, $attributes = [], $escape = true): HtmlString
+    public function mailto($email, $title = null, $attributes = [], $escape = true, bool $obfuscate = true): HtmlString
     {
-        $email = $this->email($email);
+        if ($obfuscate) {
+            $email = $this->email($email);
+        }
 
         $title = $title ?: $email;
 
